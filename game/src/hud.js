@@ -33,6 +33,7 @@ export function makeHud() {
   function setAmmo(mag, reserve) {
     if (el.ammo) el.ammo.textContent = `${mag} / ${reserve}`;
   }
+  // Wanted stars: 5 slots, filled gold up to the current heat; 3+ flashes red.
   function setStars(n) {
     if (!el.stars) return;
     el.stars.innerHTML = '';

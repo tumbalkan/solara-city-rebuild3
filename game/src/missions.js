@@ -3,6 +3,7 @@
 // machine with a gold beacon marking the objective and dialogue subtitles.
 import * as THREE from 'three';
 
+// Key map points: Mara's cafe, her garage, the park pickup, the drop, the safehouse.
 const MARA_SPOT = { x: 14, z: 120 };
 const GARAGE = { x: 44, z: 90 };
 const PARK_PICKUP = { x: 90, z: -90 };

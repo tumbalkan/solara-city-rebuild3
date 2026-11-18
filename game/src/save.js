@@ -1,5 +1,6 @@
 // Progress saving for Solara City: cash, finished missions and best wanted
 // level persist in localStorage so a session picks up where it left off.
+// Versioned key: bumping v1 invalidates old saves if the format changes.
 const KEY = 'solara-city-save-v1';
 
 export function defaultSave() {

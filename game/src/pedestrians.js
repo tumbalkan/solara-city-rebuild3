@@ -29,6 +29,7 @@ export function makePedestrians(scene, world, count) {
   const rng = world.rng;
   const lines = world.city.ROAD_LINES;
   for (let i = 0; i < count; i += 1) {
+    // 15% walk a dog; of the rest, 30% carry a bag — never both at once.
     const hasDog = rng() < 0.15;
     const hasBag = !hasDog && rng() < 0.3;
     const rig = buildPerson({

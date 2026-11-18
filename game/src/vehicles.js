@@ -13,6 +13,7 @@ export const CAR_DEFS = [
 ];
 export const POLICE_DEF = { name: 'Interceptor', kind: 'police', len: 4.5, wid: 1.9, bodyH: 0.62, cabH: 0.55, top: 36, accel: 16, grip: 3.0, colors: [0x111111] };
 
+// Materials are cached by color so identical paint jobs share one material.
 const matCache = new Map();
 function mat(color, opts) {
   const key = `${color}|${opts ? JSON.stringify(opts) : ''}`;

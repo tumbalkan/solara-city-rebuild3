@@ -23,6 +23,7 @@ const rng = mulberry32(seed);
 // ---- Renderer / scene / camera ----
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+// Cap pixel ratio: high-DPI displays would otherwise render 3-4x the pixels.
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;

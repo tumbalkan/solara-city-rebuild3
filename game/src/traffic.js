@@ -33,6 +33,7 @@ export function makeTraffic(scene, world, count) {
     });
   }
 
+  // One traffic tick: steer each car toward its next road-graph node.
   function update(dt, others) {
     for (const t of cars) {
       const c = t.car;

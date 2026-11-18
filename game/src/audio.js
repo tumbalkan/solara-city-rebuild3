@@ -26,6 +26,7 @@ export function createAudio() {
     }
   }
 
+  // White-noise buffer, rebuilt per hit so gunfire never sounds looped.
   function noiseBuffer(seconds) {
     const len = Math.floor(ctx.sampleRate * seconds);
     const buf = ctx.createBuffer(1, len, ctx.sampleRate);

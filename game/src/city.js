@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { buildCarMesh, CAR_DEFS, pickColor } from './vehicles.js';
 
+// Deterministic PRNG: the same seed always builds the same city layout.
 export function mulberry32(seed) {
   let a = seed >>> 0;
   return function () {

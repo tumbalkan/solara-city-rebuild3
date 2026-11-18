@@ -33,6 +33,7 @@ export function makeCombat(scene, world) {
     }
   }
 
+  // A tracer line lives 90 ms — just long enough to read the shot's path.
   function tracer(from, to) {
     const geo = new THREE.BufferGeometry().setFromPoints([from, to]);
     const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xffe9a8, transparent: true, opacity: 0.9 }));

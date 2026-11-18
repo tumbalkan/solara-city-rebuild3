@@ -19,6 +19,7 @@ export function makePolice(scene, world) {
 
   function spawnCopNear(target) {
     const a = rng() * Math.PI * 2;
+    // Cops spawn 45-70 m out: close enough to arrive fast, far enough not to pop in.
     const d = 45 + rng() * 25;
     const x = THREE.MathUtils.clamp(target.x + Math.cos(a) * d, -115, 115);
     const z = THREE.MathUtils.clamp(target.z + Math.sin(a) * d, -115, 115);

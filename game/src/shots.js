@@ -1,5 +1,6 @@
 // Screenshot staging: `?shot=<name>` puts the game into a composed scene
 // for the entry screenshots — skyline, Rico close-up, driving, police chase.
+// Staged scenes for the entry screenshots; each one composes a single frame.
 export const SHOT_NAMES = ['skyline', 'rico', 'drive', 'chase'];
 
 export function getShotParam() {

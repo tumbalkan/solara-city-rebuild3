@@ -18,6 +18,7 @@ function part(w, h, d, material, x, y, z) {
   m.castShadow = true;
   return m;
 }
+// Sphere part (heads, hands): 14x12 segments stay smooth without costing much.
 function ball(r, material, x, y, z, sx, sy, sz) {
   const m = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 12), material);
   m.position.set(x, y, z);
