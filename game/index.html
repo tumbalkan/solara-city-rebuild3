@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌇</text></svg>">
+<title>Solara City — Open World</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a1622;
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif; color: #fff; }
+  canvas { display: block; }
+  .hidden { display: none !important; }
+
+  /* ---------- HUD ---------- */
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+  .panel { background: rgba(8, 18, 28, 0.62); border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 10px; backdrop-filter: blur(4px); }
+
+  #minimap-wrap { position: absolute; left: 18px; bottom: 18px; }
+  #minimap { width: 180px; height: 180px; border-radius: 50%;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.55), 0 0 0 3px rgba(255,255,255,0.2); }
+  #objective { margin-top: 10px; padding: 8px 12px; max-width: 240px;
+    font-size: 13px; line-height: 1.4; color: #ffe9a8; }
+  #timer { margin-top: 6px; padding: 6px 12px; display: inline-block;
+    font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+  #timer:empty { display: none; }
+  #timer.urgent { color: #ff5252; animation: pulse 0.6s infinite alternate; }
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.12); } }
+
+  #top-right { position: absolute; top: 18px; right: 18px; text-align: right;
+    display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+  #cash { padding: 8px 16px; font-size: 24px; font-weight: 800; color: #7ee787;
+    letter-spacing: 0.5px; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+  #cash::before { content: "$"; margin-right: 2px; color: #a9f5b0; }
+  #stars { padding: 6px 14px; font-size: 26px; letter-spacing: 4px; line-height: 1; }
+  .star { color: rgba(255,255,255,0.28); text-shadow: 0 0 6px rgba(0,0,0,0.8); }
+  .star.lit { color: #ffc93c; text-shadow: 0 0 10px rgba(255,201,60,0.9); }
+  #ammo { padding: 7px 14px; font-size: 17px; font-weight: 700; }
+  #ammo::before { content: "▸ "; color: #ffc93c; }
+
+  #bottom-right { position: absolute; right: 18px; bottom: 18px; text-align: right;
+    display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+  #health { padding: 10px 14px; width: 220px; }
+  #health-label { font-size: 11px; letter-spacing: 2px; color: #ffb3b3; margin-bottom: 5px; }
+  #health-bar { height: 12px; background: rgba(255,255,255,0.15); border-radius: 6px; overflow: hidden; }
+  #health-fill { height: 100%; width: 100%; border-radius: 6px;
+    background: linear-gradient(90deg, #ff5252, #ff8a65, #7ee787); transition: width 0.25s; }
+  #health-text { font-size: 12px; margin-top: 4px; color: #ddd; }
+  #speed { padding: 8px 14px; font-size: 20px; font-weight: 800; }
+  #speed:empty { display: none; }
+
+  #subtitle { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%);
+    padding: 10px 22px; font-size: 17px; font-style: italic; text-align: center;
+    background: rgba(0,0,0,0.55); border-radius: 8px; opacity: 0; transition: opacity 0.3s;
+    max-width: 640px; }
+  #subtitle.show { opacity: 1; }
+  #toast { position: absolute; left: 50%; top: 90px; transform: translateX(-50%);
+    padding: 12px 26px; font-size: 20px; font-weight: 800; color: #ffc93c;
+    background: rgba(8,18,28,0.8); border: 1px solid rgba(255,201,60,0.5); border-radius: 10px;
+    opacity: 0; transition: opacity 0.3s; }
+  #toast.show { opacity: 1; }
+  #prompt { position: absolute; left: 50%; bottom: 170px; transform: translateX(-50%);
+    padding: 8px 18px; font-size: 15px; font-weight: 600;
+    background: rgba(8,18,28,0.75); border-radius: 8px; opacity: 0; transition: opacity 0.2s; }
+  #prompt.show { opacity: 1; }
+  #crosshair { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.85);
+    box-shadow: 0 0 6px rgba(0,0,0,0.8); }
+  #wanted-flash { position: absolute; inset: 0; pointer-events: none; opacity: 0;
+    box-shadow: inset 0 0 120px rgba(255,30,30,0.55); transition: opacity 0.4s; }
+  #wanted-flash.hot { opacity: 1; animation: flash 0.9s infinite alternate; }
+  @keyframes flash { from { opacity: 0.35; } to { opacity: 1; } }
+
+  /* ---------- Screens ---------- */
+  .screen { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    background: radial-gradient(ellipse at 50% 30%, rgba(30,80,120,0.88), rgba(6,12,20,0.96)); }
+  .logo { font-size: 72px; font-weight: 900; letter-spacing: 6px;
+    background: linear-gradient(180deg, #fff6c9 20%, #ffc93c 55%, #ff7a3c 90%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 6px 30px rgba(255,150,40,0.35); line-height: 1; }
+  .tagline { margin-top: 10px; font-size: 17px; color: #bfe3ff; letter-spacing: 2px; }
+  .story { margin-top: 22px; max-width: 560px; font-size: 15px; line-height: 1.6; color: #dfe9f2; }
+  .story b { color: #ffc93c; }
+  .controls { margin-top: 24px; display: grid; grid-template-columns: auto auto; gap: 6px 22px;
+    font-size: 14px; color: #cfe0ee; text-align: left; }
+  .controls b { color: #fff; background: rgba(255,255,255,0.12); padding: 2px 8px;
+    border-radius: 5px; font-family: ui-monospace, monospace; }
+  #play-btn { margin-top: 30px; padding: 16px 54px; font-size: 22px; font-weight: 900;
+    letter-spacing: 3px; color: #1a1200; background: linear-gradient(180deg, #ffe082, #ffc93c);
+    border: none; border-radius: 12px; cursor: pointer; pointer-events: auto;
+    box-shadow: 0 8px 30px rgba(255,180,40,0.45); }
+  #play-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .foot { margin-top: 22px; font-size: 12px; color: #8fa8bd; }
+  #dead-screen { background: radial-gradient(ellipse at center, rgba(120,10,10,0.85), rgba(10,0,0,0.97)); }
+  #dead-screen h1 { font-size: 84px; letter-spacing: 10px; color: #ff5252;
+    text-shadow: 0 0 40px rgba(255,40,40,0.6); }
+  #pause-screen h1 { font-size: 54px; letter-spacing: 6px; }
+  #pause-screen p { margin-top: 12px; color: #bfe3ff; }
+</style>
+</head>
+<body>
+  <div id="hud" class="hidden">
+    <div id="wanted-flash"></div>
+    <div id="crosshair"></div>
+    <div id="minimap-wrap">
+      <canvas id="minimap" width="180" height="180"></canvas>
+      <div id="objective" class="panel">Go to Mara at the boardwalk cafe.</div>
+      <div id="timer" class="panel"></div>
+    </div>
+    <div id="top-right">
+      <div id="cash" class="panel">$250</div>
+      <div id="stars" class="panel"></div>
+      <div id="ammo" class="panel">12 / 48</div>
+    </div>
+    <div id="bottom-right">
+      <div id="health" class="panel">
+        <div id="health-label">HEALTH <span id="health-text">100</span></div>
+        <div id="health-bar"><div id="health-fill"></div></div>
+      </div>
+      <div id="speed" class="panel"></div>
+    </div>
+    <div id="subtitle"></div>
+    <div id="toast"></div>
+    <div id="prompt"></div>
+  </div>
+
+  <div id="start-screen" class="screen">
+    <div class="logo">SOLARA CITY</div>
+    <div class="tagline">AN OPEN-WORLD CRIME STORY</div>
+    <div class="story">
+      Rico Vega rolled into Solara City with a busted sedan and a reputation for
+      driving anything, anywhere. Fixer <b>Mara</b> runs the boardwalk cafe — and
+      she has five jobs that pay. Steal cars, dodge the heat, and take the pier
+      back from the gang that thinks it owns the bay.
+    </div>
+    <div class="controls">
+      <span><b>W A S D</b> Move / drive</span><span><b>Mouse</b> Look around</span>
+      <span><b>Shift</b> Sprint</span><span><b>Left click</b> Shoot</span>
+      <span><b>Right click</b> Aim</span><span><b>E</b> Enter / exit car</span>
+      <span><b>R</b> Reload &nbsp; <b>F</b> Melee</span><span><b>Space</b> Brake &nbsp; <b>M</b> Mute &nbsp; <b>P</b> Pause</span>
+    </div>
+    <button id="play-btn">▶ PLAY</button>
+    <div class="foot">A fully original game. No real brands, no borrowed assets — every building, car and character is built in code.</div>
+  </div>
+
+  <div id="pause-screen" class="screen hidden">
+    <h1>PAUSED</h1>
+    <p>Press P or click to keep playing. Progress saves automatically.</p>
+  </div>
+
+  <div id="dead-screen" class="screen hidden">
+    <h1>FLATLINED</h1>
+    <p style="margin-top:14px;color:#ffb3b3">Rico wakes up at the boardwalk, $50 lighter…</p>
+  </div>
+
+  <script type="importmap">
+  { "imports": { "three": "./vendor/three.module.min.js" } }
+  </script>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
